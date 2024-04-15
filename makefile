@@ -1,7 +1,7 @@
 .PHONY: build run
 
 build:
-	gcc -g ./src/main.c -o ./bin/main.o
+	gcc -O0 -g ./src/main.c -o ./bin/main.o
 
 
 run:
