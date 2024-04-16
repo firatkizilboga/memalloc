@@ -1,0 +1,20 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     './bin/main.o'
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _search_list, symObjAddr: 0x0, symBinAddr: 0x1000037BC, symSize: 0x78 }
+  - { offsetInCU: 0x4D, offset: 0x4D, size: 0x8, addend: 0x0, symName: _head, symObjAddr: 0x1918, symBinAddr: 0x100008000, symSize: 0x0 }
+  - { offsetInCU: 0xB8, offset: 0xB8, size: 0x8, addend: 0x0, symName: _is_initialized, symObjAddr: 0x1920, symBinAddr: 0x100008008, symSize: 0x0 }
+  - { offsetInCU: 0xD9, offset: 0xD9, size: 0x8, addend: 0x0, symName: _search_list, symObjAddr: 0x0, symBinAddr: 0x1000037BC, symSize: 0x78 }
+  - { offsetInCU: 0x10F, offset: 0x10F, size: 0x8, addend: 0x0, symName: _request_page, symObjAddr: 0x78, symBinAddr: 0x100003834, symSize: 0x5C }
+  - { offsetInCU: 0x161, offset: 0x161, size: 0x8, addend: 0x0, symName: _free_list_node_init, symObjAddr: 0xD4, symBinAddr: 0x100003890, symSize: 0x90 }
+  - { offsetInCU: 0x1A5, offset: 0x1A5, size: 0x8, addend: 0x0, symName: _free_list_node_constructor, symObjAddr: 0x164, symBinAddr: 0x100003920, symSize: 0xA8 }
+  - { offsetInCU: 0x1E9, offset: 0x1E9, size: 0x8, addend: 0x0, symName: _coalesce, symObjAddr: 0x20C, symBinAddr: 0x1000039C8, symSize: 0x110 }
+  - { offsetInCU: 0x229, offset: 0x229, size: 0x8, addend: 0x0, symName: _free_list_insert, symObjAddr: 0x31C, symBinAddr: 0x100003AD8, symSize: 0xA8 }
+  - { offsetInCU: 0x25B, offset: 0x25B, size: 0x8, addend: 0x0, symName: _heap_init, symObjAddr: 0x3C4, symBinAddr: 0x100003B80, symSize: 0x20 }
+  - { offsetInCU: 0x270, offset: 0x270, size: 0x8, addend: 0x0, symName: _get_free_list_tail, symObjAddr: 0x3E4, symBinAddr: 0x100003BA0, symSize: 0x48 }
+  - { offsetInCU: 0x298, offset: 0x298, size: 0x8, addend: 0x0, symName: _memalloc, symObjAddr: 0x42C, symBinAddr: 0x100003BE8, symSize: 0x12C }
+  - { offsetInCU: 0x2DC, offset: 0x2DC, size: 0x8, addend: 0x0, symName: _print_free_list, symObjAddr: 0x558, symBinAddr: 0x100003D14, symSize: 0x80 }
+  - { offsetInCU: 0x300, offset: 0x300, size: 0x8, addend: 0x0, symName: _memdealloc, symObjAddr: 0x5D8, symBinAddr: 0x100003D94, symSize: 0x6C }
+  - { offsetInCU: 0x340, offset: 0x340, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x644, symBinAddr: 0x100003E00, symSize: 0x7C }
+...

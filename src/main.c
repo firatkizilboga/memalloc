@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/mman.h>
@@ -38,34 +39,56 @@ free_list_node *free_list_node_init(size_t size) {
   int pages = (sizeof(free_list_node) + size) / getpagesize() + 1;
   new->size = getpagesize() * pages - sizeof(free_list_node);
   new->start = (void *)(new + 1);
+
+  if (head && head > new) {
+    new->next = head;
+    head = new;
+    return new;
+  }
+
   return new;
 };
 
 free_list_node *free_list_node_constructor(void *freedptr) {
-  printf("freedptr: 0x%x\n", freedptr);
-  // print the size_t value at the pointed location
   size_t s = *((size_t *)freedptr);
-  printf("size of freedptr: %d\n", s);
   free_list_node *new = (free_list_node *)freedptr;
-
+  printf("SIZE: %zu\n", s);
   new->next = NULL;
   new->size =
       s - sizeof(free_list_node); // Assign the size from the block's metadata
-  printf("size of freedptr: %d\n", new->size);
   new->start = (void *)(new + 1); // Point to the memory area right after the
                                   // metadata/node struct
   return new;
 };
 
+void coalesce() {
+  free_list_node *curr = head;
+  while (curr->next) {
+    free_list_node *n = curr->next;
+    if (curr->start + curr->size == n) {
+      curr->size += n->size + sizeof(free_list_node);
+      curr->next = n->next;
+    } else {
+      curr = n;
+    }
+  }
+};
+
 void free_list_insert(free_list_node *new) {
   free_list_node *curr = head;
+  if (curr > new) {
+    new->next = curr;
+    head = new;
+    coalesce();
+    return;
+  }
 
-  while (curr->next && curr->start < new->start) {
+  while (curr->next && curr->start > new->start) {
     curr = curr->next;
   }
   new->next = curr->next;
   curr->next = new;
-  // coalesce();
+  coalesce();
 };
 
 void heap_init() { head = (free_list_node *)free_list_node_init(0); };
@@ -78,7 +101,12 @@ free_list_node *get_free_list_tail() {
   return curr;
 }
 
+static bool is_initialized = false;
 void *memalloc(size_t sizei) {
+  if (!is_initialized) {
+    heap_init();
+    is_initialized = true;
+  }
   sizei = sizei + sizeof(size_t);
   free_list_node *target = search_list(sizei);
 
@@ -91,9 +119,7 @@ void *memalloc(size_t sizei) {
   target->start = target->start + sizei;
   target->size -= sizei;
 
-  printf("allocated pointer location: 0x%x\n", ptr);
   *ptr = (size_t)sizei;
-  printf("size of allocated pointer: %zu\n", *ptr);
 
   return (void *)(ptr + 1);
 }
@@ -101,39 +127,45 @@ void *memalloc(size_t sizei) {
 void print_free_list() {
   free_list_node *curr = head;
 
-  printf("###############################\n");
+  printf("###############################\nFREE LIST: \n");
   while (curr) {
-    printf("START: 0x%x SIZE: %zu\n", curr->start, curr->size);
+    curr->size > 0
+        ? printf(
+              "SELF 0x%x,START: 0x%x SIZE: %zu NEXT LOCATION: 0x%x OR 0x%x\n",
+              curr, curr->start, curr->size, curr->next,
+              curr->start + curr->size)
+        : 0;
     curr = curr->next;
   }
 };
 
 void memdealloc(void *ptr) {
-  printf("passed pointer location: 0x%x\n", ptr);
   void *actual_location = (void *)((size_t *)ptr - 1);
-
-  printf("actual location of pointer: 0x%x\n", actual_location);
   free_list_node *node = free_list_node_constructor(actual_location);
   free_list_insert(node);
 }
 
 int main() {
-  printf("size of free list node: %zu\n", sizeof(free_list_node));
-  heap_init();
-  print_free_list();
-  int *ptr = (int *)memalloc(sizeof(int));
-  *ptr = 20;
-  printf("assigned value: %d\n", *ptr);
-
-  ptr = (int *)memalloc(sizeof(int) * 20);
+  printf("sizeof(free_list_node): %zu\n", sizeof(free_list_node));
+  int *n = (int *)memalloc(sizeof(int) * 16);
   print_free_list();
 
-  int *arr = (int *)memalloc(sizeof(int) * 991);
+  int *m = (int *)memalloc(sizeof(int) * 16);
+
   print_free_list();
 
-  memalloc(sizeof(int) * 20);
+  int *o = (int *)memalloc(sizeof(int) * 16);
+
   print_free_list();
 
-  memdealloc(ptr);
+  int *p = (int *)memalloc(sizeof(int) * 16);
+
+  print_free_list();
+
+  memdealloc(m);
+  memdealloc(o);
+  memdealloc(p);
+  memdealloc(n);
+
   print_free_list();
 }
