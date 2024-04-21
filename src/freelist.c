@@ -46,8 +46,7 @@ void coalesce(){
 
 void free_list_insert(free_list_node *node) {
   if (!head || (uintptr_t)node->start < (uintptr_t)head->start) {
-    // Insert at the head if the list is empty or the new node's start is the
-    // smallest.
+
     node->next = head;
     head = node;
   } else {

@@ -3,12 +3,12 @@
 
 #ifndef FLN_T
 #define FLN_T
-typedef struct{
-  struct free_list_node *next;
+ struct free_list_n{
+  struct free_list_n *next;
   void *start;
   size_t size;
-} free_list_node;
-
+};
+typedef struct free_list_n free_list_node;
 #endif
 
 free_list_node *search_list(size_t size);
