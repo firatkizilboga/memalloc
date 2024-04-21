@@ -49,15 +49,7 @@ void coalesce() {
 
 
 void free_list_insert(free_list_node *node) {
-    free_list_node*curr = head;
-    if(!curr) {head = node; return;}
 
-    if (curr && curr->next && node > curr->next){
-        curr = curr->next;
-    }
-
-    node->next = curr->next;
-    curr->next = node;
 };
 
 free_list_node *get_free_list_tail() {

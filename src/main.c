@@ -54,4 +54,10 @@ int main() {
   printf("sizeof(free_list_node): %zu\n", sizeof(free_list_node));
   int *n = (int *)memalloc(sizeof(int) * 16);
   print_free_list();
+
+  int *m = (int *)memalloc(sizeof(int)*200);
+
+  print_free_list();
+  memdealloc(m);
+  print_free_list();
 }
