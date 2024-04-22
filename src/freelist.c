@@ -1,4 +1,5 @@
 #include <freelist.h>
+#include <memalloc.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,29 +7,83 @@
 #include <unistd.h>
 
 static free_list_node *head = NULL;
-void free_list_init() { head = free_list_node_init(0); }
+int free_list_init(size_t size) {
+  head = free_list_node_init(size);
+  if (!head) {
+    return -1;
+  }
+  return 0;
+}
 
-free_list_node *search_list(size_t size) {
-  /*Returns a pointer to free list node if a greater or equal sized node is
-   * found else NULL*/
+static free_list_node *first_fit(size_t size) {
   free_list_node *curr = head;
-
   while (curr) {
     if (curr->size >= size) {
       return curr;
     }
-
     curr = curr->next;
   }
-  return curr;
+  return NULL;
 };
 
-void print_free_list_node(free_list_node *node) {
-  printf("Printing node location 0x%x : size %d : start 0x%x : end 0x%x\n",
-         node, node->size, node->start, (uintptr_t)node->start + node->size);
+static free_list_node *best_fit(size_t size) {
+  free_list_node *curr = head;
+  free_list_node *best = NULL;
+  while (curr) {
+    if (curr->size >= size) {
+      if (!best || curr->size < best->size) {
+        best = curr;
+      }
+    }
+    curr = curr->next;
+  }
+  return best;
 };
 
-extern free_list_node *request_page(size_t);
+static free_list_node *worst_fit(size_t size) {
+  free_list_node *curr = head;
+  free_list_node *worst = NULL;
+  while (curr) {
+    if (curr->size >= size) {
+      if (!worst || curr->size > worst->size) {
+        worst = curr;
+      }
+    }
+    curr = curr->next;
+  }
+  return worst;
+};
+
+static free_list_node *next_fit(size_t size) {
+  bool found = false;
+  free_list_node *curr = head;
+  while (curr) {
+    if (curr->size >= size) {
+      if (found) {
+        return curr;
+      }
+      found = true;
+    }
+    curr = curr->next;
+  }
+  return NULL;
+};
+
+free_list_node *free_list_search(size_t size, Strategy strategy) {
+  switch (strategy) {
+  case FIRST_FIT:
+    return first_fit(size);
+  case BEST_FIT:
+    return best_fit(size);
+  case WORST_FIT:
+    return worst_fit(size);
+  case NEXT_FIT:
+    return next_fit(size);
+  default:
+    return NULL;
+  }
+};
+
 free_list_node *free_list_node_init(size_t size) {
   size_t size_new = size + sizeof(free_list_node);
   free_list_node *node = (free_list_node *)request_page(size_new);
@@ -37,7 +92,6 @@ free_list_node *free_list_node_init(size_t size) {
   node->size =
       (size_new / getpagesize() + 1) * getpagesize() - sizeof(free_list_node);
 
-  print_free_list_node(node);
   return node;
 };
 
@@ -58,11 +112,6 @@ void coalesce() {
   }
 
   while (curr && curr->next) {
-    if (curr->next->size == 0) {
-      curr->next = curr->next->next;
-      continue;
-    }
-
     if ((uintptr_t)curr->start + curr->size == (uintptr_t)curr->next) {
       curr->size += curr->next->size + sizeof(free_list_node);
       curr->next = curr->next->next;
@@ -98,13 +147,6 @@ void free_list_insert(free_list_node *node) {
   }
 }
 
-void free_list_node_print(free_list_node *node) {
-  printf("Printing node location 0x%x : size %d : start 0x%x\n", node,
-         node->size, node->start);
-
-  fflush(stdout);
-};
-
 free_list_node *get_free_list_tail() {
   free_list_node *curr = head;
   while (curr && curr->next) {
@@ -114,16 +156,21 @@ free_list_node *get_free_list_tail() {
   return curr;
 };
 
+int calculate_empty(free_list_node *node) {
+  /* returns 1 if nonempty, 0 if empty */
+  return node + 1 == node->start;
+}
+
 void print_free_list() {
   free_list_node *curr = head;
-  printf("###########FREELIST#########\n");
   if (!curr) {
     printf("\n");
   }
-
+  //;
+  printf("%-12s %-10s %-10s\n", "Addr", "Size", "Status");
   while (curr) {
-    printf("location 0x%x : size %d : start 0x%x, end: 0x%x\n", curr,
-           curr->size, curr->start, (uintptr_t)curr->start + curr->size);
+    printf("0x%-10x %-10d %-10s\n", curr->start, curr->size,
+           calculate_empty(curr) ? "Empty" : "Full");
     curr = curr->next;
   }
 };
