@@ -1,9 +1,9 @@
+#include <freelist.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <freelist.h>
 
 void *request_page(size_t size) {
   int page_size = getpagesize();
@@ -15,11 +15,7 @@ void *request_page(size_t size) {
   return ptr;
 };
 
-
-void heap_init() { 
-    free_list_init();
-};
-
+void heap_init() { free_list_init(); };
 
 static bool is_initialized = false;
 void *memalloc(size_t sizei) {
@@ -48,16 +44,26 @@ void memdealloc(void *ptr) {
   void *actual_location = (void *)((size_t *)ptr - 1);
   free_list_node *node = free_list_node_constructor(actual_location);
   free_list_insert(node);
+
+  coalesce();
 }
 
 int main() {
   printf("sizeof(free_list_node): %zu\n", sizeof(free_list_node));
+  printf("sizeof size_t: %zu\n", sizeof(size_t));
+
+  memalloc(1);
+  print_free_list();
   int *n = (int *)memalloc(sizeof(int) * 16);
-  print_free_list();
+  int *m = (int *)memalloc(sizeof(int) * 200);
+  int *p = (int *)memalloc(sizeof(int) * 200);
 
-  int *m = (int *)memalloc(sizeof(int)*200);
-
-  print_free_list();
   memdealloc(m);
+
+  memdealloc(n);
+
+  memdealloc(p);
+
+  memdealloc(q);
   print_free_list();
 }

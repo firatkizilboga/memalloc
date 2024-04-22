@@ -1,5 +1,7 @@
 #include <freelist.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
@@ -38,10 +40,38 @@ free_list_node *free_list_node_constructor(void *freedptr) {
   node->size = size - sizeof(free_list_node);
   node->start = (void *)(node + 1);
   node->next = NULL;
+  return node;
 };
 
-void coalesce(){
+void coalesce() {
+  free_list_node *curr = head;
+  // change head to the first non zero size
+  if (head->size == 0) {
+    head = head->next;
+  }
 
+  while (curr && curr->next) {
+    if (curr->next->size == 0) {
+      curr->next = curr->next->next;
+      continue;
+    }
+
+    if ((uintptr_t)curr->start + curr->size == (uintptr_t)curr->next) {
+      curr->size += curr->next->size + sizeof(free_list_node);
+      curr->next = curr->next->next;
+      coalesce();
+    } else if ((uintptr_t)curr->start + curr->size ==
+               (uintptr_t)curr->next->start) {
+      // this is the case where there is an inner block until the bigger blocks
+      // end is freed
+      curr->next->size += curr->size + sizeof(free_list_node);
+      curr->next->start = curr->start - sizeof(free_list_node);
+      curr->size = 0;
+
+      coalesce();
+    }
+    curr = curr->next;
+  }
 };
 
 void free_list_insert(free_list_node *node) {
@@ -61,6 +91,13 @@ void free_list_insert(free_list_node *node) {
   }
 }
 
+void free_list_node_print(free_list_node *node) {
+  printf("Printing node location 0x%x : size %d : start 0x%x\n", node,
+         node->size, node->start);
+
+  fflush(stdout);
+};
+
 free_list_node *get_free_list_tail() {
   free_list_node *curr = head;
   while (curr && curr->next) {
@@ -78,8 +115,8 @@ void print_free_list() {
   }
 
   while (curr) {
-    printf("location 0x%x : size %d : start 0x%x\n", curr, curr->size,
-           curr->start);
+    printf("location 0x%x : size %d : start 0x%x, end: 0x%x\n", curr,
+           curr->size, curr->start, (uintptr_t)curr->start + curr->size);
     curr = curr->next;
   }
 };
