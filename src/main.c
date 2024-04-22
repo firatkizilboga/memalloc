@@ -43,6 +43,7 @@ void *memalloc(size_t sizei) {
 void memdealloc(void *ptr) {
   void *actual_location = (void *)((size_t *)ptr - 1);
   free_list_node *node = free_list_node_constructor(actual_location);
+
   free_list_insert(node);
 
   coalesce();
@@ -51,10 +52,10 @@ void memdealloc(void *ptr) {
 int main() {
   printf("sizeof(free_list_node): %zu\n", sizeof(free_list_node));
   printf("sizeof size_t: %zu\n", sizeof(size_t));
-
-  memalloc(1);
+  printf("page size is = %d\n", getpagesize());
   print_free_list();
   int *n = (int *)memalloc(sizeof(int) * 16);
+  print_free_list();
   int *m = (int *)memalloc(sizeof(int) * 200);
   int *p = (int *)memalloc(sizeof(int) * 200);
 
@@ -63,7 +64,6 @@ int main() {
   memdealloc(n);
 
   memdealloc(p);
-
-  memdealloc(q);
+  memdealloc(memalloc(20000));
   print_free_list();
 }

@@ -23,6 +23,11 @@ free_list_node *search_list(size_t size) {
   return curr;
 };
 
+void print_free_list_node(free_list_node *node) {
+  printf("Printing node location 0x%x : size %d : start 0x%x : end 0x%x\n",
+         node, node->size, node->start, (uintptr_t)node->start + node->size);
+};
+
 extern free_list_node *request_page(size_t);
 free_list_node *free_list_node_init(size_t size) {
   size_t size_new = size + sizeof(free_list_node);
@@ -30,7 +35,9 @@ free_list_node *free_list_node_init(size_t size) {
   node->start = node + 1;
   node->next = NULL;
   node->size =
-      (size_new / getpagesize() + 1) * getpagesize() - sizeof(free_list_node *);
+      (size_new / getpagesize() + 1) * getpagesize() - sizeof(free_list_node);
+
+  print_free_list_node(node);
   return node;
 };
 
