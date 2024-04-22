@@ -166,10 +166,12 @@ void print_free_list() {
   if (!curr) {
     printf("\n");
   }
-  //;
+  void *base = curr->start;
+
   printf("%-12s %-10s %-10s\n", "Addr", "Size", "Status");
   while (curr) {
-    printf("0x%-10x %-10d %-10s\n", curr->start, curr->size,
+    printf("0x%-10x %-10zu %-10s\n",
+           (unsigned int)((uintptr_t)curr->start - (uintptr_t)base), curr->size,
            calculate_empty(curr) ? "Empty" : "Full");
     curr = curr->next;
   }
