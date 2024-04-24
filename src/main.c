@@ -18,10 +18,13 @@ void DumpFreeList() { print_free_list(); }
 int main() {
   InitMyMalloc(0);
   void *ptr = MyMalloc(sizeof(int) * 16, FIRST_FIT);
-  void *ptr1 = MyMalloc(16000, FIRST_FIT);
+  void *ptr1 = MyMalloc(160, FIRST_FIT);
   DumpFreeList();
   MyFree(ptr);
   DumpFreeList();
   MyMalloc(20, NEXT_FIT);
+  DumpFreeList();
+ 
+  MyFree(ptr1 + 18000);
   DumpFreeList();
 }

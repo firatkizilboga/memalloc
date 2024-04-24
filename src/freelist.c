@@ -116,6 +116,7 @@ void coalesce() {
       curr->size += curr->next->size + sizeof(free_list_node);
       curr->next = curr->next->next;
       coalesce();
+      return;
     } else if ((uintptr_t)curr->start + curr->size ==
                (uintptr_t)curr->next->start) {
       // this is the case where there is an inner block until the bigger blocks
@@ -125,6 +126,7 @@ void coalesce() {
       curr->size = 0;
 
       coalesce();
+      return;
     }
     curr = curr->next;
   }
