@@ -5,6 +5,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+uintptr_t heap_base;
+uintptr_t heap_bound;
 void *request_page(size_t size);
 int heap_init(size_t size, bool in_lock);
 void *memalloc(size_t size);

@@ -28,12 +28,5 @@ Strategy get_strategy() {
 
   Strategy strategy = (Strategy) atoi(buffer);
 
-    return strategy;
-}
-
-int main() {
-  InitMyMalloc(0);
-  DumpFreeList();
-  MyMalloc(200, NEXT_FIT);
-  DumpFreeList();
+  return strategy;
 }

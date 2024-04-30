@@ -1,15 +1,18 @@
 #include <freelist.h>
 #include <memalloc.h>
 #include <stdint.h>
+#include <sys/_types/_null.h>
 
-static uintptr_t heap_base;
-static uintptr_t heap_bound;
 
 void *request_page(size_t size) {
   int page_size = getpagesize();
-  int pages = size / page_size + 1;
+  printf("rq size: %d\n", size);
 
-  void *ptr = mmap(NULL, size, PROT_READ | PROT_WRITE,
+  int pages = (size ? size-1:0) / page_size + 1;
+
+  printf("rq pages: %d\n", pages);
+
+  void *ptr = mmap(NULL, page_size*pages, PROT_READ | PROT_WRITE,
                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
   heap_bound = (uintptr_t)ptr + page_size * pages;
@@ -32,19 +35,20 @@ int heap_init(size_t size, bool in_lock) {
 };
 
 void *memalloc_with_strategy(size_t sizei, Strategy strategy) {
-  printf("lock: %d, init: %d\n", is_locked, is_initialized);
   if (!is_initialized && !is_locked) {
-
     heap_init(0, false);
-  }     
+  }
   sizei = sizei + sizeof(size_t);
   free_list_node *target = free_list_search(sizei, strategy);
   if ((target == NULL || target->size < sizei) && !is_locked) {
-    if (is_locked) { printf("ffed"); return NULL; }
     target = free_list_node_init(sizei);
     get_free_list_tail()->next = target;
-}
-
+  }
+  if ((target == NULL || target->size < sizei) && is_locked) {
+    fprintf(stderr,
+            "Error: Out of memory or can't allocate with this strategy.\n");
+    return NULL;
+  }
   size_t *ptr = (size_t *)target->start;
   target->start = target->start + sizei;
   target->size -= sizei;
@@ -65,5 +69,7 @@ void memdealloc(void *ptr) {
     free_list_node *node = free_list_node_constructor(actual_location);
     free_list_insert(node);
     coalesce();
+  } else {
+    fprintf(stderr, "Error: Invalid pointer.\n");
   }
 }

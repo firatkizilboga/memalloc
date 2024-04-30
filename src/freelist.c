@@ -86,12 +86,13 @@ free_list_node *free_list_search(size_t size, Strategy strategy) {
 
 free_list_node *free_list_node_init(size_t size) {
   size_t size_new = size + sizeof(free_list_node);
+  printf("size_new: %zu\n", size_new);
   free_list_node *node = (free_list_node *)request_page(size_new);
   node->start = node + 1;
   node->next = NULL;
-  node->size =
-      (size_new / getpagesize() + 1) * getpagesize() - sizeof(free_list_node);
 
+  node->size = ((size_t)((size_new - 1) / getpagesize()) + 1)*getpagesize() - sizeof(free_list_node);
+  printf("size: %zu\n", node->size);
   return node;
 };
 
@@ -168,13 +169,15 @@ void print_free_list() {
   if (!curr) {
     printf("\n");
   }
-  void *base = curr->start;
+
+
 
   printf("%-12s %-10s %-10s\n", "Addr", "Size", "Status");
   while (curr) {
     printf("0x%-10x %-10zu %-10s\n",
-           (unsigned int)((uintptr_t)curr->start - (uintptr_t)base), curr->size,
-           calculate_empty(curr) ? "Empty" : "Full");
+           (unsigned int)((uintptr_t)curr->start -  heap_base),
+           curr->size,
+           calculate_empty(curr) ? "Empty" : "Used");
     curr = curr->next;
   }
 };

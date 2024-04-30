@@ -1,6 +1,6 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     './bin/main.o'
+binary-path:     'bin/easyalloc.o'
 relocations:
   - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _InitMyMalloc, symObjAddr: 0x0, symBinAddr: 0x1000030E0, symSize: 0x2C }
   - { offsetInCU: 0x7F, offset: 0x7F, size: 0x8, addend: 0x0, symName: _InitMyMalloc, symObjAddr: 0x0, symBinAddr: 0x1000030E0, symSize: 0x2C }
