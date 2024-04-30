@@ -18,27 +18,32 @@ void *request_page(size_t size) {
 };
 
 static bool is_initialized = false;
-int heap_init(size_t size) {
+static bool is_locked = false;
+int heap_init(size_t size, bool in_lock) {
   int res = free_list_init(size);
   if (res == 0) {
     free_list_node *head = get_free_list_tail();
     heap_base = (uintptr_t)head;
     is_initialized = true;
+    is_locked = in_lock;
     return 0;
   }
   return -1;
 };
 
 void *memalloc_with_strategy(size_t sizei, Strategy strategy) {
-  if (!is_initialized) {
-    heap_init(0);
-  }
+  printf("lock: %d, init: %d\n", is_locked, is_initialized);
+  if (!is_initialized && !is_locked) {
+
+    heap_init(0, false);
+  }     
   sizei = sizei + sizeof(size_t);
   free_list_node *target = free_list_search(sizei, strategy);
-  if (target == NULL || target->size < sizei) {
+  if ((target == NULL || target->size < sizei) && !is_locked) {
+    if (is_locked) { printf("ffed"); return NULL; }
     target = free_list_node_init(sizei);
     get_free_list_tail()->next = target;
-  }
+}
 
   size_t *ptr = (size_t *)target->start;
   target->start = target->start + sizei;

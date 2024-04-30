@@ -1,7 +1,12 @@
 #include <freelist.h>
 #include <memalloc.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-int InitMyMalloc(int size) { return heap_init((size_t)size); }
+int InitMyMalloc(int size) {
+  /*initializes the heap and locks its size*/
+  return heap_init((size_t)size, true);
+}
 
 void *MyMalloc(int size, int strategy) {
   Strategy strat = (Strategy)strategy;
@@ -15,16 +20,20 @@ int MyFree(void *ptr) {
 
 void DumpFreeList() { print_free_list(); }
 
+Strategy get_strategy() {
+  char buffer[1024];
+  printf("Please enter strategy:\nBEST_FIT = 0\nFIT = 1\nFIRST_FIT = 2\nNEXT_FIT = 3\n");
+
+  fgets(buffer, sizeof(buffer), stdin);
+
+  Strategy strategy = (Strategy) atoi(buffer);
+
+    return strategy;
+}
+
 int main() {
   InitMyMalloc(0);
-  void *ptr = MyMalloc(sizeof(int) * 16, FIRST_FIT);
-  void *ptr1 = MyMalloc(160, FIRST_FIT);
   DumpFreeList();
-  MyFree(ptr);
-  DumpFreeList();
-  MyMalloc(20, NEXT_FIT);
-  DumpFreeList();
- 
-  MyFree(ptr1 + 18000);
+  MyMalloc(200, NEXT_FIT);
   DumpFreeList();
 }
