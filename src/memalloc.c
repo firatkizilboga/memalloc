@@ -11,11 +11,8 @@ uintptr_t get_heap_bound(){return heap_bound;};
 
 void *request_page(size_t size) {
   int page_size = getpagesize();
-  printf("rq size: %d\n", size);
 
   int pages = (size ? size-1:0) / page_size + 1;
-
-  printf("rq pages: %d\n", pages);
 
   void *ptr = mmap(NULL, page_size*pages, PROT_READ | PROT_WRITE,
                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);

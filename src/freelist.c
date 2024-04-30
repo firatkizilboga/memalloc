@@ -86,13 +86,11 @@ free_list_node *free_list_search(size_t size, Strategy strategy) {
 
 free_list_node *free_list_node_init(size_t size) {
   size_t size_new = size + sizeof(free_list_node);
-  printf("size_new: %zu\n", size_new);
   free_list_node *node = (free_list_node *)request_page(size_new);
   node->start = node + 1;
   node->next = NULL;
 
   node->size = ((size_t)((size_new - 1) / getpagesize()) + 1)*getpagesize() - sizeof(free_list_node);
-  printf("size: %zu\n", node->size);
   return node;
 };
 

@@ -6,7 +6,6 @@ int main() {
 
   /* Proof of coalescing and reallocation */
   size_t page_size = getpagesize();
-  printf("Page size: %ld\n", page_size);
   InitMyMalloc(page_size - sizeof(free_list_node));
   DumpFreeList();
 
