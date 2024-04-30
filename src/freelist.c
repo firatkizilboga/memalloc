@@ -175,7 +175,7 @@ void print_free_list() {
   printf("%-12s %-10s %-10s\n", "Addr", "Size", "Status");
   while (curr) {
     printf("0x%-10x %-10zu %-10s\n",
-           (unsigned int)((uintptr_t)curr->start -  heap_base),
+           (unsigned int)((uintptr_t)curr->start -  get_heap_base()),
            curr->size,
            calculate_empty(curr) ? "Empty" : "Used");
     curr = curr->next;

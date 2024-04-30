@@ -1,7 +1,12 @@
 #include <freelist.h>
 #include <memalloc.h>
 #include <stdint.h>
-#include <sys/_types/_null.h>
+
+static uintptr_t heap_base;
+static uintptr_t heap_bound;
+uintptr_t get_heap_base(){return heap_base;};
+
+uintptr_t get_heap_bound(){return heap_bound;};
 
 
 void *request_page(size_t size) {
