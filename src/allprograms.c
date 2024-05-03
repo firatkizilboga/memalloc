@@ -4,49 +4,51 @@
 #include <sys/wait.h>
 #include <string.h>
 
-void log_memory_usage(const char *when) {
-    char command[256];
-    printf("Memory usage %s:\n", when);
-    snprintf(command, sizeof(command), "free -h");
-    system(command);  // Directly output to console for simplicity
-}
+#define MAX_PROGRAMS 4
 
 int main() {
-    int strategies[4] = {0, 1, 2, 3};  // Different strategies for each program
-    const char *programs[4] = {"P1.out", "P2.out", "P3.out", "P4.out"};
+    const char *programs[MAX_PROGRAMS] = {"P1.out", "P2.out", "P3.out", "P4.out"};
+    char strategy[10]; // Buffer to hold strategy input
+    char binaryPath[50]; // Buffer to hold the path to the binary
 
-    printf("Initial system memory state:\n");
-    log_memory_usage("before allocations");
+    // Prompt user for the strategy number
+    printf("Enter the memory allocation strategy number (0-3): ");
+    if (fgets(strategy, sizeof(strategy), stdin) == NULL) {
+        fprintf(stderr, "Error reading input.\n");
+        return 1;
+    }
+    strategy[strcspn(strategy, "\n")] = 0; // Remove newline character
 
-    for (int i = 0; i < 4; i++) {
+    // Iterate over each program and run it sequentially
+    for (int i = 0; i < MAX_PROGRAMS; i++) {
         pid_t pid = fork();
 
         if (pid == 0) { // Child process
-            char binaryPath[50];
             snprintf(binaryPath, sizeof(binaryPath), "./bin/%s", programs[i]);
-            char strategyArg[10];
-            snprintf(strategyArg, sizeof(strategyArg), "%d", strategies[i]);
+            char *args[] = {binaryPath, strategy, NULL};
 
-            // Execute the process binary with the strategy argument
-            execl(binaryPath, programs[i], strategyArg, NULL);
+            // Redirect child's output to stdout
+            dup2(STDOUT_FILENO, 1);
 
-            // execl only returns on error
+            // Execute the program binary with strategy argument
+            execvp(binaryPath, args);
+
+            // execvp only returns on error
             fprintf(stderr, "Failed to execute %s\n", binaryPath);
             exit(1);
-        } else if (pid < 0) {
+        } else if (pid > 0) { // Parent process
+            int status;
+            waitpid(pid, &status, 0); // Wait for the child to complete
+
+            if (WIFEXITED(status)) {
+                printf("Program %s (PID: %d) completed with exit status %d\n", programs[i], pid, WEXITSTATUS(status));
+            }
+        } else {
             // Fork failed
             fprintf(stderr, "Failed to fork for program %s\n", programs[i]);
-            exit(1);
+            return 1;
         }
     }
-
-    // Wait for all child processes to finish
-    for (int i = 0; i < 4; i++) {
-        wait(NULL);
-    }
-
-    printf("System memory state after all allocations and operations:\n");
-    log_memory_usage("after allocations");
 
     return 0;
 }

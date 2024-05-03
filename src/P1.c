@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <unistd.h>  // For getpagesize()d
-#include <easyalloc.h>  // Assume this includes InitMyMalloc, MyMalloc, MyFree
-#include <freelist.h>  // Assume this includes structures for managing the free list
+#include <unistd.h>  
+#include <easyalloc.h> 
+#include <freelist.h>  
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -20,8 +20,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Memory initialization failed.\n");
         return 1;
     }
-
-    //Prove when we free that we can coalesce and we can reuse the memory
+    printf("No allocations:\n");
+    DumpFreeList();
 
     // Allocate several blocks
     printf("Allocating 2 blocks of page size and two page sizes respectively \n");
@@ -44,8 +44,12 @@ int main(int argc, char *argv[]) {
 
     // Freeing ptr2
     MyFree(ptr2);
-    printf("After freeing second block:\n");
+    printf("After freeing second block coalesceing again:\n");
     DumpFreeList();
+
+    printf("Final state after only the third allocation:\n");
+    DumpFreeList();
+
     return 0;
 }
 
