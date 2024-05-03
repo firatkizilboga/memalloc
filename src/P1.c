@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>  
-#include <easyalloc.h> 
+#include <mymalloc.h> 
 #include <freelist.h>  
 
 int main(int argc, char *argv[]) {

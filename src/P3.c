@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>  // For getpagesize()
-#include <easyalloc.h>  // Custom memory management functions
+#include <mymalloc.h>  // Custom memory management functions
 #include <freelist.h>  // Free list data structure
 
 int main(int argc, char *argv[]) {

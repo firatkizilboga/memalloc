@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <easyalloc.h>
+#include <mymalloc.h>
 #include <freelist.h>
 
 int main(int argc, char *argv[]) {
@@ -32,13 +32,16 @@ int main(int argc, char *argv[]) {
 
     size_t page_size = getpagesize();
     InitMyMalloc(page_size - sizeof(free_list_node));
+    printf("No allocations");
+    DumpFreeList();
 
     // Perform mallocs and frees according to the selected strategy
-    const int num_allocations = 10;
+    const int num_allocations = 4;
     void* ptrs[num_allocations];
-
+    
+    printf("Allocating %d blocks of size %lu bytes using strategy %d\n", num_allocations, page_size/5, input_strategy);
     for (int i = 0; i < num_allocations; i++) {
-        ptrs[i] = MyMalloc(100, strategy);
+        ptrs[i] = MyMalloc(page_size/5, strategy);
         if (ptrs[i] == NULL) {
             fprintf(stderr, "Allocation failed at index %d\n", i);
             // Free all previous allocations before returning
@@ -48,6 +51,9 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     }
+
+    DumpFreeList();
+
 
     // Free all allocations
     for (int i = 0; i < num_allocations; i++) {
