@@ -4,22 +4,15 @@
 
 int main() {
 
-  /* Proof of coalescing and reallocation */
+  /* Proof of coalescing, reallocation and unmapping*/
   size_t page_size = getpagesize();
   InitMyMalloc(page_size - sizeof(free_list_node));
   DumpFreeList();
 
-  void*ptr = MyMalloc(100, 0);
-  void*ptr2 = MyMalloc(100, 0);
-
-
-  DumpFreeList();
-  MyFree(ptr2);
+  free_list_node *node1 = MyMalloc(50, 0);
+  MyFree(node1);
   DumpFreeList();
 
-  MyFree(ptr);
-  DumpFreeList();
-
-  MyMalloc(100, 0);
-  DumpFreeList();
+  MyMalloc(50, 0);
 }
+

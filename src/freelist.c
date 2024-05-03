@@ -66,6 +66,16 @@ static free_list_node *next_fit(size_t size) {
     }
     curr = curr->next;
   }
+  curr = head;
+  while (curr) {
+    if (curr->size >= size) {
+      if (found) {
+        return curr;
+      }
+      found = true;
+    }
+    curr = curr->next;
+  }
   return NULL;
 };
 
@@ -90,7 +100,8 @@ free_list_node *free_list_node_init(size_t size) {
   node->start = node + 1;
   node->next = NULL;
 
-  node->size = ((size_t)((size_new - 1) / getpagesize()) + 1)*getpagesize() - sizeof(free_list_node);
+  node->size = ((size_t)((size_new - 1) / getpagesize()) + 1) * getpagesize() -
+               sizeof(free_list_node);
   return node;
 };
 
@@ -157,25 +168,32 @@ free_list_node *get_free_list_tail() {
   return curr;
 };
 
-int calculate_empty(free_list_node *node) {
-  /* returns 1 if nonempty, 0 if empty */
-  return node + 1 == node->start;
-}
-
 void print_free_list() {
   free_list_node *curr = head;
   if (!curr) {
     printf("\n");
   }
 
-
-
   printf("%-12s %-10s %-10s\n", "Addr", "Size", "Status");
+  //compute the size between self and start  print it as full then print the size as empty
   while (curr) {
-    printf("0x%-10x %-10zu %-10s\n",
-           (unsigned int)((uintptr_t)curr->start -  get_heap_base()),
-           curr->size,
-           calculate_empty(curr) ? "Empty" : "Used");
-    curr = curr->next;
+      if ((void*)curr != curr->start) {
+          printf("%-12p %-10lu %-10s\n", (uintptr_t) curr-get_heap_base(), (uintptr_t)curr->start - (uintptr_t)curr, "Full");
+      }
+      if (curr->size) {
+        printf("%-12p %-10lu %-10s\n", (uintptr_t) curr->start-get_heap_base(), curr->size, "Empty");
+      }
+      curr = curr->next;
   }
+  printf("\n");
+};
+
+void unmap() {
+/* determines if any of the free lists actually cover the span of a page */
+    free_list_node *current = head;
+    if (current->size + sizeof(free_list_node) == getpagesize()) {
+        free_list_node *next = current->next;
+        head = next;
+        munmap(current, current->size + sizeof(free_list_node));
+    }
 };

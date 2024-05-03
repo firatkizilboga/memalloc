@@ -9,4 +9,4 @@ build:
 
 run:	
 	clang -O0 -g3 src/$(CMD).c  -o bin/$(CMD).o bin/easyalloc.o bin/memalloc.o bin/freelist.o -Iinclude
-	./bin/$(CMD).o $(STRATEGY)
+	./bin/$(CMD).o $(STRAT)
