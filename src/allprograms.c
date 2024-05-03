@@ -7,9 +7,16 @@
 #define MAX_PROGRAMS 4
 
 int main() {
-    const char *programs[MAX_PROGRAMS] = {"P1.out", "P2.out", "P3.out", "P4.out"};
+    const char *programs[MAX_PROGRAMS] = {"P1.o", "P2.o", "P3.o", "P4.o"};
     char strategy[10]; // Buffer to hold strategy input
-    char binaryPath[50]; // Buffer to hold the path to the binary
+    char binaryPath[256]; // Buffer to hold the path to the binary
+    char cwd[256]; // Buffer to store the current working directory
+
+    // Get the current working directory
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        perror("getcwd() error");
+        return 1;
+    }
 
     // Prompt user for the strategy number
     printf("Enter the memory allocation strategy number (0-3): ");
@@ -24,12 +31,12 @@ int main() {
         pid_t pid = fork();
 
         if (pid == 0) { // Child process
-            snprintf(binaryPath, sizeof(binaryPath), "./bin/%s", programs[i]);
+            snprintf(binaryPath, sizeof(binaryPath), "%s/bin/%s", cwd, programs[i]);
             char *args[] = {binaryPath, strategy, NULL};
 
             // Redirect child's output to stdout
             dup2(STDOUT_FILENO, 1);
-
+            printf("\nExecuting %s with strategy %s\n", programs[i], strategy);
             // Execute the program binary with strategy argument
             execvp(binaryPath, args);
 
