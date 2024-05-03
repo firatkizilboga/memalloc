@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <unistd.h>  // For getpagesize()d
-#include <easyalloc.h>  // Assume this includes InitMyMalloc, MyMalloc, MyFree
-#include <freelist.h>  // Assume this includes structures for managing the free list
+#include <unistd.h>  
+#include <easyalloc.h>  
+#include <freelist.h>  
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -16,36 +16,39 @@ int main(int argc, char *argv[]) {
     }
 
     size_t page_size = getpagesize();
-    if (InitMyMalloc(4 * page_size) == -1) {  // Initialize with 20 pages
+    if (InitMyMalloc(10 * page_size) == -1) {  // Initialize with 10 pages
         fprintf(stderr, "Memory initialization failed.\n");
         return 1;
     }
 
-    //Prove when we free that we can coalesce and we can reuse the memory
-
     // Allocate several blocks
-    printf("Allocating 2 blocks of page size and two page sizes respectively \n");
-
     void* ptr1 = MyMalloc(page_size, strategy);
     void* ptr2 = MyMalloc(2 * page_size, strategy);
+    void* ptr3 = MyMalloc(page_size, strategy);
+    void* ptr4 = MyMalloc(2 * page_size, strategy);
+
+    // Show initial memory state
     printf("Initial allocations:\n");
     DumpFreeList();
 
     // Deallocate middle blocks to create adjacent free blocks
-    MyFree(ptr1);
-    printf("After freeing first block:\n");
+    MyFree(ptr2);
+    MyFree(ptr3);
+    printf("After freeing middle blocks:\n");
     DumpFreeList();
 
     // Allocate a block that fits into the coalesced space
-    void* ptr3 = MyMalloc(190, strategy);
+    void* ptr5 = MyMalloc(3 * page_size, strategy);
     printf("After allocation in the coalesced space:\n");
-
     DumpFreeList();
 
-    // Freeing ptr2
-    MyFree(ptr2);
-    printf("After freeing second block:\n");
+    // Final cleanup
+    MyFree(ptr1);
+    MyFree(ptr4);
+    MyFree(ptr5);
+    printf("Final state after all deallocations:\n");
     DumpFreeList();
+
     return 0;
 }
 
